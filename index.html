@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Countdown Timer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            text-align: center;
+            background: linear-gradient(to right, #141E30, #243B55);
+            color: white;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(8px);
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            margin: 20px 0;
+        }
+
+        input {
+            width: 60px;
+            padding: 8px;
+            font-size: 18px;
+            text-align: center;
+            border: 1px solid white;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        button {
+            padding: 12px 18px;
+            margin: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        #startButton {
+            background-color: #28a745;
+            color: white;
+        }
+
+        #pauseButton {
+            background-color: #ffc107;
+            color: black;
+        }
+
+        #resetButton {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        #timerDisplay {
+            font-size: 48px;
+            font-weight: 600;
+            margin: 20px 0;
+        }
+
+        /* Popup Styles */
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 32px;
+            display: none;
+            z-index: 9999;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Countdown Timer</h1>
+        <div class="input-group">
+            <input type="number" id="hours" min="0" max="99" placeholder="HH">
+            <input type="number" id="minutes" min="0" max="59" placeholder="MM">
+            <input type="number" id="seconds" min="0" max="59" placeholder="SS">
+        </div>
+        <h2 id="timerDisplay">00:00:00</h2>
+        <button id="startButton" onclick="startTimer()">Start</button>
+        <button id="pauseButton" onclick="pauseTimer()" disabled>Pause</button>
+        <button id="resetButton" onclick="resetTimer()">Reset</button>
+    </div>
+
+    <!-- Popup Message -->
+    <div id="popup" class="popup">⏳ Time's Up! ⏳</div>
+
+    <!-- Sound Alert -->
+    <audio id="alarmSound" src="https://www.soundjay.com/button/beep-07.wav"></audio>
+
+    <script>
+        let countdown;
+        let totalSeconds = 0;
+        let isPaused = false;
+
+        function startTimer() {
+            clearInterval(countdown); // Clear any existing timer
+
+            // Get input values
+            if (!isPaused) {
+                let hours = parseInt(document.getElementById("hours").value) || 0;
+                let minutes = parseInt(document.getElementById("minutes").value) || 0;
+                let seconds = parseInt(document.getElementById("seconds").value) || 0;
+
+                totalSeconds = hours * 3600 + minutes * 60 + seconds;
+
+                if (totalSeconds <= 0) {
+                    alert("Please enter a valid time!");
+                    return;
+                }
+            }
+
+            updateDisplay();
+
+            countdown = setInterval(() => {
+                if (totalSeconds <= 0) {
+                    clearInterval(countdown);
+                    showPopup();
+                    playSound();
+                    return;
+                }
+                totalSeconds--;
+                updateDisplay();
+            }, 1000);
+
+            isPaused = false;
+            document.getElementById("pauseButton").disabled = false;
+        }
+
+        function pauseTimer() {
+            clearInterval(countdown);
+            isPaused = true;
+            document.getElementById("pauseButton").disabled = true;
+        }
+
+        function resetTimer() {
+            clearInterval(countdown);
+            totalSeconds = 0;
+            isPaused = false;
+            document.getElementById("timerDisplay").innerText = "00:00:00";
+            document.getElementById("hours").value = "";
+            document.getElementById("minutes").value = "";
+            document.getElementById("seconds").value = "";
+            hidePopup();
+            document.getElementById("pauseButton").disabled = true;
+        }
+
+        function updateDisplay() {
+            let h = Math.floor(totalSeconds / 3600);
+            let m = Math.floor((totalSeconds % 3600) / 60);
+            let s = totalSeconds % 60;
+
+            document.getElementById("timerDisplay").innerText =
+                (h < 10 ? "0" + h : h) + ":" +
+                (m < 10 ? "0" + m : m) + ":" +
+                (s < 10 ? "0" + s : s);
+        }
+
+        function showPopup() {
+            const popup = document.getElementById("popup");
+            popup.style.display = "block";
+            setTimeout(hidePopup, 5000); // Hide popup after 5 seconds
+        }
+
+        function hidePopup() {
+            document.getElementById("popup").style.display = "none";
+        }
+
+        function playSound() {
+            const sound = document.getElementById("alarmSound");
+            sound.play();
+        }
+    </script>
+
+</body>
+
+</html>
